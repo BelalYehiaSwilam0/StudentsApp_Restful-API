@@ -1,0 +1,30 @@
+E:\مشروع restfull api\Students.BLL\bin\Debug\net8.0\StudentAPIBusinessLayer.deps.json
+E:\مشروع restfull api\Students.BLL\bin\Debug\net8.0\StudentAPIBusinessLayer.dll
+E:\مشروع restfull api\Students.BLL\bin\Debug\net8.0\StudentAPIBusinessLayer.pdb
+E:\مشروع restfull api\Students.BLL\bin\Debug\net8.0\StudentDataAccessLayer.dll
+E:\مشروع restfull api\Students.BLL\bin\Debug\net8.0\StudentDataAccessLayer.pdb
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.csproj.AssemblyReference.cache
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.AssemblyInfoInputs.cache
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.AssemblyInfo.cs
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.csproj.CoreCompileInputs.cache
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentA.BCA95842.Up2Date
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.dll
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\refint\StudentAPIBusinessLayer.dll
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.pdb
+E:\مشروع restfull api\Students.BLL\obj\Debug\net8.0\ref\StudentAPIBusinessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.BLL\bin\Debug\net8.0\StudentAPIBusinessLayer.deps.json
+E:\CV\StudentsApp_restfull api_project\Students.BLL\bin\Debug\net8.0\StudentAPIBusinessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.BLL\bin\Debug\net8.0\StudentAPIBusinessLayer.pdb
+E:\CV\StudentsApp_restfull api_project\Students.BLL\bin\Debug\net8.0\StudentDataAccessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.BLL\bin\Debug\net8.0\StudentDataAccessLayer.pdb
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.csproj.AssemblyReference.cache
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.GeneratedMSBuildEditorConfig.editorconfig
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.AssemblyInfoInputs.cache
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.AssemblyInfo.cs
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.csproj.CoreCompileInputs.cache
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentA.BCA95842.Up2Date
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\refint\StudentAPIBusinessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\StudentAPIBusinessLayer.pdb
+E:\CV\StudentsApp_restfull api_project\Students.BLL\obj\Debug\net8.0\ref\StudentAPIBusinessLayer.dll

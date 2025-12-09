@@ -1,0 +1,24 @@
+E:\مشروع restfull api\Students.DAL\bin\Debug\net8.0\StudentDataAccessLayer.deps.json
+E:\مشروع restfull api\Students.DAL\bin\Debug\net8.0\StudentDataAccessLayer.dll
+E:\مشروع restfull api\Students.DAL\bin\Debug\net8.0\StudentDataAccessLayer.pdb
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.csproj.AssemblyReference.cache
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.GeneratedMSBuildEditorConfig.editorconfig
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.AssemblyInfoInputs.cache
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.AssemblyInfo.cs
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.csproj.CoreCompileInputs.cache
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.dll
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\refint\StudentDataAccessLayer.dll
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.pdb
+E:\مشروع restfull api\Students.DAL\obj\Debug\net8.0\ref\StudentDataAccessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.DAL\bin\Debug\net8.0\StudentDataAccessLayer.deps.json
+E:\CV\StudentsApp_restfull api_project\Students.DAL\bin\Debug\net8.0\StudentDataAccessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.DAL\bin\Debug\net8.0\StudentDataAccessLayer.pdb
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.csproj.AssemblyReference.cache
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.GeneratedMSBuildEditorConfig.editorconfig
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.AssemblyInfoInputs.cache
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.AssemblyInfo.cs
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.csproj.CoreCompileInputs.cache
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\refint\StudentDataAccessLayer.dll
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\StudentDataAccessLayer.pdb
+E:\CV\StudentsApp_restfull api_project\Students.DAL\obj\Debug\net8.0\ref\StudentDataAccessLayer.dll
