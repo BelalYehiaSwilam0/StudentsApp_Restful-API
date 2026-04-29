@@ -19,7 +19,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "https": {
+    "https": { // <--- This is the HTTPS Profile
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

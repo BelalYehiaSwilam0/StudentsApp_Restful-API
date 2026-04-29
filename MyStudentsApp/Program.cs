@@ -16,6 +16,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// --- STEP 1: Verify HTTPS Redirection Middleware ---
+// This middleware ensures that any incoming HTTP request is automatically 
+// redirected to its HTTPS counterpart, forcing a secure connection.
+//It must appear before controller mapping.
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
