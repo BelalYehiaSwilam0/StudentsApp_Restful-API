@@ -1,41 +1,62 @@
-# Students API - .NET 8.0 Web API
+# Students & Users Management API - .NET 8.0
 
-## Overview
-A **RESTful Web API** for managing student records built with a focus on **Performance** and **Security**. This project implements a **3-Tier Architecture** to ensure separation of concerns and maintainability.
+## 🚀 Overview
+A high-performance **RESTful Web API** designed with a scalable architecture to manage people and system users. This project demonstrates a deep understanding of **Database Design**, **Backend Security**, and the **3-Tier Architecture** pattern.
 
-### Architecture
-- **Presentation Layer**: ASP.NET Core Web API controllers handling HTTP requests.
-- **Business Logic Layer (BLL)**: Managing data validation and business rules.
-- **Data Access Layer (DAL)**: High-performance database operations using **ADO.NET**.
-
-> [!IMPORTANT]
-> **Performance Note**: This project intentionally avoids heavy ORMs like Entity Framework, using **Pure ADO.NET and Stored Procedures (T-SQL)** for maximum control and efficiency.
+### 🏗 Architecture & Design Patterns
+*   **3-Tier Architecture**: Strict separation between Presentation (Controllers), Logic (BLL), and Data (DAL).
+*   **Relational Schema**: Transitioned from a flat "Students" table to a normalized relational **People/Users** schema.
+*   **Pure ADO.NET**: Intentionally avoids heavy ORMs like Entity Framework to achieve maximum execution speed and total control over SQL execution.
 
 ---
 
-## Key Features & Security
-- **Secure Configuration**: Database connection strings are managed via **Environment Variables** to prevent sensitive data leaks.
-- **SQL Injection Protection**: All database interactions are handled via **Stored Procedures** and Parameters.
-- **Clean API Design**: Follows RESTful conventions for intuitive integration.
-- **Modern Tech Stack**: Built on **.NET 8.0**.
+## 🔐 Security Features
+*   **BCrypt Password Hashing**: Implements industry-standard salting and hashing (Cost Factor: 11) for user credentials.
+*   **T-SQL Protection**: 100% protection against SQL Injection by using **Stored Procedures** and parameterized queries.
+*   **Clean Configuration**: Sensitive connection strings are managed via **Environment Variables** (following the 12-Factor App methodology).
 
 ---
 
-## API Endpoints
+## ⚡ Database Optimization (T-SQL)
+*   **Computed Columns**: Implemented dynamic **Age calculation** in the `People` table to ensure data integrity and reduce application-level overhead.
+*   **Business Logic in SPs**: Centralized data logic within SQL Stored Procedures for better performance and reusability (DRY Principle).
+*   **Scalable Schema**: Supports multiple roles (`Admin`, `Student`) and linkable person profiles.
+
+---
+
+## 🛠 Tech Stack
+*   **Framework**: .NET 8.0
+*   **Database**: SQL Server 2022
+*   **Data Access**: ADO.NET (Pure SQL)
+*   **Security**: BCrypt.Net-Next
+*   **Documentation**: Swagger/OpenAPI
+
+---
+
+## 📖 API Endpoints
+
+### Users & Authentication
 | Method | Endpoint | Description |
-|--------|---------|-------------|
-| GET    | `/api/Students/All` | Retrieve all students |
-| GET    | `/api/Students/{id}` | Retrieve student by ID |
-| POST   | `/api/Students` | Add new student |
-| PUT    | `/api/Students/{id}` | Update student |
-| DELETE | `/api/Students/{id}` | Delete student by ID |
+|:--- |:--- |:--- |
+| GET | `/api/Users/All` | Retrieve all system users with full profiles. |
+| GET | `/api/Users/{id}` | Get user details by ID. |
+| POST | `/api/Users` | Register a new user (with BCrypt hashing). |
+| PUT | `/api/Users/UpdatePassword` | Securely update user password. |
+
+### People Management
+| Method | Endpoint | Description |
+|:--- |:--- |:--- |
+| GET | `/api/People/All` | List all people (Calculates age automatically). |
+| DELETE | `/api/People/{id}` | Remove person and linked records. |
 
 ---
 
-## Getting Started
-1. Clone the repository.
-2. Set up your **Environment Variable**:
-   - Variable Name: `STUDENT_DB_CONNECTION`
-   - Value: `Your_SQL_Server_Connection_String`
-3. Run the SQL script (provided in `/Database` folder) to create Stored Procedures.
-4. Run the project and explore via **Swagger**.
+## 🚀 Getting Started
+1.  **Clone the repository.**
+2.  **Database Setup**:
+    *   Locate the `Database/StudentManagementDB_FullScript.sql` file.
+    *   Execute the script in your SQL Server instance to recreate the schema, SPs, and sample data.
+3.  **Environment Configuration**:
+    *   Set an environment variable `STUDENT_DB_CONNECTION` with your connection string.
+4.  **Run**:
+    *   Hit `F5` in Visual Studio 2022 and explore the **Swagger UI**.

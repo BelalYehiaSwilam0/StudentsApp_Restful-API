@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StudentDataAccessLayer
+namespace APIDataAccessLayer
 {
     public class clsDatabaseAccessSettings
     {

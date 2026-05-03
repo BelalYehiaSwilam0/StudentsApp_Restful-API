@@ -2,7 +2,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // This converter allows Enums to be displayed as strings (e.g., "UserName") 
+        // instead of integers (e.g., 1) in Swagger and JSON responses.
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -10,17 +17,17 @@ builder.Services.AddSwaggerGen();
 // --- PHASE: CORS Configuration ---
 // Definition: CORS is a browser security feature that restricts cross-origin HTTP requests.
 // Pro-Tip: "If the request does not come from a browser, CORS does not apply."
-//builder.Services.AddCors(options =>
-//{
-//    // Define a specific policy name for better management
-//    options.AddPolicy("StudentApiCorsPolicy", policy =>
-//    {
-//        policy.WithOrigins("http://localhost:5197", "https://localhost:7169") // Add your frontend URLs here
-//              .AllowAnyMethod()  // Allows GET, POST, PUT, DELETE, etc.
-//              .AllowAnyHeader();  // Allows custom headers like Authorization or Content-Type
-              
-//    });
-//});
+builder.Services.AddCors(options =>
+{
+    // Define a specific policy name for better management
+    options.AddPolicy("StudentApiCorsPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:5197", "https://localhost:7169") // Add your frontend URLs here
+              .AllowAnyMethod()  // Allows GET, POST, PUT, DELETE, etc.
+              .AllowAnyHeader();  // Allows custom headers like Authorization or Content-Type
+
+    });
+});
 
 var app = builder.Build();
 
