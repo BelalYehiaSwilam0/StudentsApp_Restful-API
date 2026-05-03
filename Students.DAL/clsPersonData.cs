@@ -2,11 +2,11 @@
 using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
-namespace StudentDataAccessLayer
+namespace APIDataAccessLayer
 {
-    public class StudentDTO
+    public class PersonDTO
     {
-        public int StudentId { get; set; }
+        public int PersonId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
@@ -16,9 +16,9 @@ namespace StudentDataAccessLayer
 
         public bool IsActive { get; set; }
 
-        public StudentDTO(int studentId, string firstName, string lastName, string email, DateTime birthDate, int age, bool isActive)
+        public PersonDTO(int personId, string firstName, string lastName, string email, DateTime birthDate, int age, bool isActive)
         {
-            StudentId = studentId;
+            PersonId = personId;
             FirstName = firstName;
             LastName = lastName;
             Email = email;
@@ -28,7 +28,7 @@ namespace StudentDataAccessLayer
         }
     }
 
-    public class UpdateStudentDTO
+    public class UpdatePersonDTO
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
@@ -37,17 +37,17 @@ namespace StudentDataAccessLayer
         public bool? IsActive { get; set; }
     }
 
-    public class clsStudentData
+    public class clsPersonData
     {
         
-        public static List<StudentDTO> GetAllStudents()
+        public static List<PersonDTO> GetPeople()
         {
-            var StudentsList = new List<StudentDTO>();
+            var StudentsList = new List<PersonDTO>();
             try
             {
                 using (SqlConnection conn = new SqlConnection(clsDatabaseAccessSettings._connectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("SP_GetAllStudents", conn))
+                    using (SqlCommand cmd = new SqlCommand("SP_GetPeople", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
 
@@ -57,9 +57,9 @@ namespace StudentDataAccessLayer
                         {
                             while (reader.Read())
                             {
-                                StudentsList.Add(new StudentDTO
+                                StudentsList.Add(new PersonDTO
                                 (
-                                    reader.GetInt32(reader.GetOrdinal("StudentId")),
+                                    reader.GetInt32(reader.GetOrdinal("PersonId")),
                                     reader.GetString(reader.GetOrdinal("FirstName")),
                                     reader.GetString(reader.GetOrdinal("LastName")),
                                     reader.GetString(reader.GetOrdinal("Email")),
@@ -78,20 +78,20 @@ namespace StudentDataAccessLayer
             catch (Exception)
             {
 
-                return new List<StudentDTO>();
+                return new List<PersonDTO>();
             }
         }
 
-        public static StudentDTO GetStudentById(int studentId)
+        public static PersonDTO GetPersonById(int personId)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
                 {
-                    using (var command = new SqlCommand("SP_GetStudentById",connection))
+                    using (var command = new SqlCommand("SP_GetPersonById", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@StudentId", studentId);
+                        command.Parameters.AddWithValue("@PersonId", personId);
 
                         connection.Open();
 
@@ -99,9 +99,9 @@ namespace StudentDataAccessLayer
                         {
                             if (reader.Read())
                             {
-                                return new StudentDTO
+                                return new PersonDTO
                                     (
-                                    reader.GetInt32(reader.GetOrdinal("StudentId")),
+                                    reader.GetInt32(reader.GetOrdinal("PersonId")),
                                     reader.GetString(reader.GetOrdinal("FirstName")),
                                     reader.GetString(reader.GetOrdinal("LastName")),
                                     reader.GetString(reader.GetOrdinal("Email")),
@@ -128,21 +128,21 @@ namespace StudentDataAccessLayer
             }
         }
 
-        public static int AddStudent(StudentDTO studentDTO)
+        public static int AddPerson(PersonDTO personDTO)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
                 {
-                    using (var command = new SqlCommand("SP_AddStudent", connection))
+                    using (var command = new SqlCommand("SP_AddPerson", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
 
-                        command.Parameters.AddWithValue("@FirstName", studentDTO.FirstName);
-                        command.Parameters.AddWithValue("@LastName", studentDTO.LastName);
-                        command.Parameters.AddWithValue("@Email", studentDTO.Email);
-                        command.Parameters.AddWithValue("@BirthDate", studentDTO.BirthDate);
-                        var outputIdParam = new SqlParameter("@NewStudentId", SqlDbType.Int)
+                        command.Parameters.AddWithValue("@FirstName", personDTO.FirstName);
+                        command.Parameters.AddWithValue("@LastName", personDTO.LastName);
+                        command.Parameters.AddWithValue("@Email", personDTO.Email);
+                        command.Parameters.AddWithValue("@BirthDate", personDTO.BirthDate);
+                        var outputIdParam = new SqlParameter("@NewPersonId", SqlDbType.Int)
                         {
                             Direction = ParameterDirection.Output
                         };
@@ -162,21 +162,21 @@ namespace StudentDataAccessLayer
             }
         }
 
-        public static bool UpdateStudent(StudentDTO updateStudent)
+        public static bool UpdatePerson(PersonDTO updatePerson)
         {
             try
             {
                 using (SqlConnection connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
                 {
-                    using (var command = new SqlCommand("SP_UpdateStudent", connection))
+                    using (var command = new SqlCommand("SP_UpdatePerson", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@StudentId",updateStudent.StudentId);
-                        command.Parameters.AddWithValue("@FirstName", updateStudent.FirstName);
-                        command.Parameters.AddWithValue("@LastName", updateStudent.LastName);
-                        command.Parameters.AddWithValue("@Email", updateStudent.Email);
-                        command.Parameters.AddWithValue("@BirthDate", updateStudent.BirthDate);
-                        command.Parameters.AddWithValue("@IsActive", updateStudent.IsActive);
+                        command.Parameters.AddWithValue("@PersonId",updatePerson.PersonId);
+                        command.Parameters.AddWithValue("@FirstName", updatePerson.FirstName);
+                        command.Parameters.AddWithValue("@LastName", updatePerson.LastName);
+                        command.Parameters.AddWithValue("@Email", updatePerson.Email);
+                        command.Parameters.AddWithValue("@BirthDate", updatePerson.BirthDate);
+                        command.Parameters.AddWithValue("@IsActive", updatePerson.IsActive);
 
                         connection.Open();
                         command.ExecuteNonQuery();
@@ -192,16 +192,16 @@ namespace StudentDataAccessLayer
             }
         }
 
-        public static bool DeleteStudent(int studentId)
+        public static bool DeletePerson(int personId)
         {
             try
             {
                 using (var connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
                 {
-                    using (var command = new SqlCommand("SP_DeleteStudent", connection))
+                    using (var command = new SqlCommand("SP_DeletePerson", connection))
                     {
                         command.CommandType = CommandType.StoredProcedure;
-                        command.Parameters.AddWithValue("@StudentId", studentId);
+                        command.Parameters.AddWithValue("@PersonId", personId);
 
                         connection.Open();
 
@@ -219,6 +219,22 @@ namespace StudentDataAccessLayer
             }
            
            
+        }
+
+        public static bool IsPersonExist(int PersonID)
+        {
+            bool isFound = false;
+            using (SqlConnection connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
+            {
+                using (SqlCommand command = new SqlCommand("SP_IsPersonExist", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@PersonID", PersonID);
+                    connection.Open();
+                    isFound = (int)command.ExecuteScalar() == 1;
+                }
+            }
+            return isFound;
         }
     }
     
