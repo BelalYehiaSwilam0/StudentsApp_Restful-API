@@ -56,6 +56,13 @@ namespace APIBusinessLayer
             return (uDto != null) ? new clsUser(uDto) : null;
         }
 
+        public static clsUser FindUserByUserName(string userName)
+        {
+            // Call DAL to get the user data
+             UserDTO uDto = clsUserData.GetUserByUserName(userName);
+            return (uDto != null) ? new clsUser(uDto) : null;
+        }
+
         private bool _AddNewUser()
         {
             this.UserID = clsUserData.AddNewUser(new CreateUserDTO

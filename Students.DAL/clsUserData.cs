@@ -126,7 +126,41 @@ namespace APIDataAccessLayer
             return null;
         }
 
-       
+        public static UserDTO GetUserByUserName(string userName)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(clsDatabaseAccessSettings._connectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand("SP_GetUserByUserName", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@UserName", userName);
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return new UserDTO(
+                                    reader.GetInt32(reader.GetOrdinal("UserID")),
+                                    reader.GetInt32(reader.GetOrdinal("PersonID")),
+                                    reader.GetString(reader.GetOrdinal("FullName")),
+                                    reader.GetString(reader.GetOrdinal("Email")),
+                                    reader.GetString(reader.GetOrdinal("UserName")),
+                                    reader.GetString(reader.GetOrdinal("PasswordHash")),
+                                    reader.GetString(reader.GetOrdinal("Role")),
+                                    reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception) { }
+            return null;
+        }
+
+
         public static int AddNewUser(CreateUserDTO userDTO)
         {
             try

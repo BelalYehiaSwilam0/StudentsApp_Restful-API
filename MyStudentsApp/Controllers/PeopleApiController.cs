@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using APIBusinessLayer;
+﻿using APIBusinessLayer;
 using APIDataAccessLayer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 namespace MyStudentsApp.Controllers
 {
-    //[Route("api/[controller]")]
+    [Authorize]
     [Route("api/People")]
     [ApiController]
     public class PeopleApiController : ControllerBase
