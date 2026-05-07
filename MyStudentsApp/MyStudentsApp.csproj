@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Students.BLL\APIBusinessLayer.csproj" />
-    <ProjectReference Include="..\Students.BLL\StudentAPIBusinessLayer.csproj" />
   </ItemGroup>
 
 </Project>
