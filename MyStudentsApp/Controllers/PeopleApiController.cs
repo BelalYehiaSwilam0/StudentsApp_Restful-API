@@ -10,10 +10,11 @@ namespace MyStudentsApp.Controllers
     [ApiController]
     public class PeopleApiController : ControllerBase
     {
+        [Authorize(Roles = "Admin")]
         [HttpGet ("All", Name = "GetPeople")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public ActionResult<IEnumerable<PersonDTO>> GetPeople()
         {
             List<PersonDTO> PeopleList = APIBusinessLayer.clsPerson.GetPeople();
@@ -25,11 +26,13 @@ namespace MyStudentsApp.Controllers
             return Ok(PeopleList);
         }
 
+
+        //I will finish the "GetPersonById" endpoint later. I need to implement Ownership Rules first.
         [HttpGet("{id}", Name = "GetPersonById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public ActionResult<PersonDTO> GetPersonById(int id)
         {
             if (id < 1)
@@ -50,11 +53,11 @@ namespace MyStudentsApp.Controllers
         }
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost(Name = "AddPerson")]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-
         public ActionResult<PersonDTO>AddPerson([FromBody] PersonDTO newPersonDTO)
         {
             if (newPersonDTO == null || string.IsNullOrEmpty(newPersonDTO.FirstName) || string.IsNullOrEmpty(newPersonDTO.LastName) || newPersonDTO.BirthDate > DateTime.Now)
@@ -81,12 +84,12 @@ namespace MyStudentsApp.Controllers
             }
         }
 
-        
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}" , Name = "DeletePersonById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public ActionResult DeletePersonById(int id)
         {
             if(id < 1)
@@ -104,12 +107,12 @@ namespace MyStudentsApp.Controllers
             }
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}", Name = "UpdatePersonById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public ActionResult<PersonDTO> UpdatePersonById(int id, UpdatePersonDTO updatedPerson)
         {
             if (id < 1 || updatedPerson == null)

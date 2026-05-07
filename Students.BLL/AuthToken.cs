@@ -2,8 +2,8 @@
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using BCrypt.Net;
 using System.Text;
+using BCrypt.Net;
 
 namespace APIBusinessLayer
 {
