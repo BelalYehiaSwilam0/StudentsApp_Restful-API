@@ -12,8 +12,10 @@ namespace MyStudentsApp.Controllers
     [ApiController]
     public class UsersAPIController : ControllerBase
     {
+        [Authorize(Roles = "Admin")]
         [HttpGet("All", Name = "GetAllUsers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<UserDTO>> GetAllUsers()
         {
@@ -27,11 +29,12 @@ namespace MyStudentsApp.Controllers
 
             return Ok(UsersList);
         }
-        
+
+
+        //I will finish the "GetUserById" endpoint later. I need to implement Ownership Rules first.
         [HttpGet("{id}", Name = "GetUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public ActionResult<UserDTO> GetUserById(int id)
         {
             if (id < 1) return BadRequest($"Invalid ID {id}");
@@ -43,10 +46,11 @@ namespace MyStudentsApp.Controllers
             return Ok(user.UDTO);
         }
 
-        
+        [Authorize(Roles = "Admin")]
         [HttpPost(Name = "AddNewUser")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDTO> AddUser(CreateUserDTO createUserDto)
         {
@@ -86,9 +90,11 @@ namespace MyStudentsApp.Controllers
             return StatusCode(500, "Internal server error while creating user.");
         }
 
-       
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}", Name = "UpdateUserField")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDTO> UpdateUserField(int id, clsUser.enUpdateType updateType, [FromBody] string newValue)
         {
@@ -135,8 +141,11 @@ namespace MyStudentsApp.Controllers
             return StatusCode(500, "Update failed.");
         }
 
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DeleteUser(int id)
         {
