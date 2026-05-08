@@ -51,6 +51,17 @@ A high-performance **RESTful Web API** designed with a scalable architecture to 
 
 ---
 
+## 🧪 Testing & Credentials
+To test the **Ownership Checks** and **Role-based Access**, you can use the following pre-configured accounts in the Swagger UI:
+
+| Role | Username | Password | Access Level |
+|:--- |:--- |:--- |:--- |
+| **Admin** | `Belal` | `1235` | Full access to all resources. |
+| **Student** | `Ali` | `Ali1234` | Restricted to own data (Ownership Secured). |
+
+**Note:** Ensure you use the `POST /api/Auth/login` (or your login endpoint) to receive the **Bearer Token** before testing secured routes.
+
+
 ## 🚀 Getting Started
 1.  **Clone the repository.**
 2.  **Database Setup**:
