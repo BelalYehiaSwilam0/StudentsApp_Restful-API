@@ -167,8 +167,12 @@ app.UseHttpsRedirection();
 
 //UseCors MUST be placed after app.UseHttpsRedirection();
 app.UseCors("AllowLocalClient");
+
+// Authorization checks access rules (e.g., [Authorize], roles, policies).
 app.UseAuthorization();
 
+// Map controller routes (e.g., /api/Auth/login, /api/Users/All).
 app.MapControllers();
 
+// Start the web application.
 app.Run();
