@@ -35,7 +35,7 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)] // Added 403 for security
-        public ActionResult<UserDTO> GetUserById(int id)
+        public async Task<ActionResult<UserDTO>> GetUserById(int id, [FromServices] IAuthorizationService authorizationService)
         {
             // 1. Basic validation for the ID
             if (id < 1) return BadRequest($"Invalid ID {id}");
@@ -46,31 +46,12 @@ namespace MyStudentsApp.Controllers
             // 3. Check if the user exists in our system
             if (user == null) return NotFound("User not found.");
 
-            // --- Ownership Logic Starts Here ---
+            //Policy-Based Authorization 
+            var authResult = await authorizationService.AuthorizeAsync(User,id,"StudentOwnerOrAdmin");
 
-            // 4. Get User ID and Role from the JWT Token
-            // Note: User.FindFirst is a built-in way to read claims from the token
-            var authenticatedUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Convert the authenticated user ID from string to integer.
-            int currentUsertId = int.Parse(authenticatedUserId);
-
-            // Extract the authenticated user's role from the JWT.
-            // Typical values are "Student" or "Admin".
-            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
-
-            // Determine whether the current user is an Admin.
-            // Admins are allowed to access any student record.
-            bool isAdmin = currentUserRole == "Admin";
-
-            // Ownership check:
-            // If the user is NOT an admin and is trying to access
-            // a student record that does not belong to them,
-            // the request is forbidden.
-            if (!isAdmin && currentUsertId != id)
-                return Forbid(); // Returns HTTP 403 Forbidden
-            
-            // 7. If everything is okay, return the data
+            if (!authResult.Succeeded)
+                return Forbid(); // 403
+            // If everything is okay, return the data
             return Ok(user.UDTO);
         }
 
