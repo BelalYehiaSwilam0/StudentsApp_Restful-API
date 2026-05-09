@@ -27,7 +27,7 @@ namespace MyStudentsApp.Controllers
         }
 
 
-        //I will finish the "GetPersonById" endpoint later. I need to implement Ownership Rules first.
+        [Authorize(Roles = "Admin")]// Only Admins can access this
         [HttpGet("{id}", Name = "GetPersonById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
