@@ -1,4 +1,5 @@
-﻿using APIBusinessLayer;
+﻿using APIBusinessLayer.Auth.DTOs;
+using APIBusinessLayer.AuthDTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -21,7 +22,7 @@ namespace StudentApi.Controllers
         [AllowAnonymous]
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
             // Send login data to the AuthService and wait for the token.
@@ -34,6 +35,32 @@ namespace StudentApi.Controllers
 
 
             return Ok(new { token = UserToken });
+        }
+
+        [HttpPost("refresh-token")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)
+        {
+            //  We call the refresh method to get a new token.
+            var result = AuthToken.RefreshToken(refreshRequest);
+
+            if (result == null)
+                return Unauthorized("Invalid refresh token");
+
+            return Ok(result);
+        }
+
+        [HttpPost("logout")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult Logout([FromBody] LogoutRequest logoutRequest)
+        {
+            //  We stop the token so the user is logged out.
+            var success = AuthToken.RevokeToken(logoutRequest);
+
+            if (!success) return Ok(); // Do not reveal if user exists
+
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }
