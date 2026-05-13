@@ -21,6 +21,8 @@ namespace APIBusinessLayer
         public string Role { get; set; }
         public bool IsActive { get; set; }
 
+        public clsUserRefreshToken RefreshTokenInfo { get; set; }
+
         public UserDTO UDTO
         {
             get { return new UserDTO(UserID, PersonID, FullName, Email, UserName, PasswordHash, Role, IsActive); }
@@ -45,6 +47,10 @@ namespace APIBusinessLayer
             this.PasswordHash = uDto.PasswordHash;
             this.Role = uDto.Role;
             this.IsActive = uDto.IsActive;
+
+            // Load refresh token data
+            this.RefreshTokenInfo =
+                clsUserRefreshToken.FindByUserID(this.UserID);
             this.Mode = enMode.Update;
         }
 

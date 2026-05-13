@@ -48,9 +48,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             // This must be the same key used when generating the token.
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")))
+
+            // ClockSkew = TimeSpan.Zero
         };
     });
-
 
 // ===============================
 // Authorization Configuration
@@ -67,8 +68,6 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new StudentOwnerOrAdminRequirement()));
 });
 
-
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -78,7 +77,6 @@ builder.Services.AddControllers()
     });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
 
 // Register Swagger generator and customize its behavior.
 builder.Services.AddSwaggerGen(options =>
