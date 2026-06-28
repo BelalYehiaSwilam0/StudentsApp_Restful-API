@@ -1,8 +1,11 @@
+using Azure.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Threading.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,9 +50,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             // The secret key used to validate the JWT signature.
             // This must be the same key used when generating the token.
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")))
+                Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY"))),
 
-            // ClockSkew = TimeSpan.Zero
+             ClockSkew = TimeSpan.Zero
         };
     });
 
@@ -68,6 +71,60 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new StudentOwnerOrAdminRequirement()));
 });
 
+// ===============================
+// Register Rate Limiting Service
+// ===============================
+builder.Services.AddRateLimiter(options =>
+{
+    // Automatically return HTTP 429 Too Many Requests when a limit is breached
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    
+    options.AddPolicy("AuthLimiter", httpContext =>
+    {
+        // Step 1: Extract the client IP address or fallback to unknown
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        // Step 2: Return a fixed window limiter tied to this specific IP address
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip, // Keeps your exact original implementation intact
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5, // Strict 5 requests per minute for security
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0 // No queueing allowed to prevent resource holding
+            });
+    });
+    
+
+    options.AddPolicy("CoreLimiter", httpContext =>
+    {
+        var user = httpContext.User;
+
+        // Step 1: Safely extract the unique User ID from the validated JWT claims
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "standard-client";
+
+        // Step 2: Set the baseline limit for standard application users
+        int limit = 10; // Regular users get 10 requests per minute
+
+        // Step 3: Check the user's role from the identity context linked to your authorization policies
+        if (user.IsInRole("Admin"))
+        {
+            limit = 30; // Privileged Admins get a higher limit of 30 requests per minute
+        }
+
+        // Step 4: Return an isolated partition for this specific user ID
+        // This ensures one bad user cannot block or affect other users on the network
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: $"user_{userId}", // Tracked independently in memory using the unique ID
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = limit, // Applies the dynamic limit calculated above
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            });
+    });
+});
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -82,7 +139,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     // ===============================
-    // 1) Define the JWT Bearer security scheme
+    //  Define the JWT Bearer security scheme
     // ===============================
     //
     // This tells Swagger that our API uses JWT Bearer authentication
@@ -116,7 +173,7 @@ builder.Services.AddSwaggerGen(options =>
 
 
     // ===============================
-    // 2) Require the Bearer scheme for secured endpoints
+    //  Require the Bearer scheme for secured endpoints
     // ===============================
     //
     // This tells Swagger that endpoints protected by [Authorize]
@@ -166,14 +223,30 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// --- STEP 1: Verify HTTPS Redirection Middleware ---
+// Verify HTTPS Redirection Middleware ---
 // This middleware ensures that any incoming HTTP request is automatically 
 // redirected to its HTTPS counterpart, forcing a secure connection.
 //It must appear before controller mapping.
 app.UseHttpsRedirection();
 
-//UseCors MUST be placed after app.UseHttpsRedirection();
-app.UseCors("AllowLocalClient");
+
+app.UseCors("StudentApiCorsPolicy");
+
+//This ensures abusive requests are blocked early, before expensive work.
+app.UseRateLimiter();
+
+//Optional Safe Message (Recommended)
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (context.Response.StatusCode == StatusCodes.Status429TooManyRequests)
+    {
+        await context.Response.WriteAsync("Please slow down and try again later.");
+    }
+});
+//  Do not include the exact numbers in the message.
+// (Security via obscurity: avoid leaking rate-limit thresholds to prevent bot calibration)
 
 app.UseAuthentication();
 // Authorization checks access rules (e.g., [Authorize], roles, policies).

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 namespace StudentApi.Controllers
@@ -14,6 +15,8 @@ namespace StudentApi.Controllers
     // such as logging in and issuing JWT tokens.
     [Authorize]
     [ApiController]
+    [EnableRateLimiting("AuthLimiter")] //Now refresh is protected.
+
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
@@ -21,6 +24,8 @@ namespace StudentApi.Controllers
         // It verifies credentials and returns a JWT token if login succeeds.
         [AllowAnonymous]
         [HttpPost("login")]
+        //[EnableRateLimiting("AuthLimiter")] //Now refresh is protected.
+
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Login([FromBody] LoginRequest loginRequest)
@@ -38,6 +43,7 @@ namespace StudentApi.Controllers
         }
 
         [HttpPost("refresh-token")]
+        //[EnableRateLimiting("AuthLimiter")] //Now refresh is protected.
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)

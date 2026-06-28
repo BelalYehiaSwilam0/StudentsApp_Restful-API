@@ -4,6 +4,7 @@ using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace MyStudentsApp.Controllers
@@ -11,6 +12,7 @@ namespace MyStudentsApp.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("CoreLimiter")] //Now EndPoints are protected.
     public class UsersAPIController : ControllerBase
     {
         [Authorize(Roles = "Admin")]
