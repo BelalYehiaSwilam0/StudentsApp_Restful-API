@@ -1,0 +1,7 @@
+for ($i=1; $i -le 6; $i++) {
+  Write-Host "Attempt $i"
+  Invoke-RestMethod -Method Post `
+    -Uri "https://localhost:7169/api/Auth/login" `
+    -ContentType "application/json" `
+    -Body '{"UserName":"Belal","password":"wrongPassword"}'
+}

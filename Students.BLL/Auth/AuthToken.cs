@@ -96,7 +96,7 @@ namespace APIBusinessLayer.AuthDTOs
                 issuer: "MyStudentsApp",
                 audience: "ApiUsers",
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),// Shorter life for Access Token
+                expires: DateTime.UtcNow.AddMinutes(5),// Shorter life for Access Token
                 signingCredentials: credentials
             );
 
