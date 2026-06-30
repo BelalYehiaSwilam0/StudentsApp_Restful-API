@@ -15,10 +15,16 @@ namespace MyStudentsApp.Controllers
     [EnableRateLimiting("CoreLimiter")] //Now EndPoints are protected.
     public class UsersAPIController : ControllerBase
     {
+        private readonly ILogger<UsersAPIController> _logger;
+
+        public UsersAPIController(ILogger<UsersAPIController> logger)
+        {
+            _logger = logger;
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpGet("All", Name = "GetAllUsers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<UserDTO>> GetAllUsers()
         {
@@ -43,8 +49,7 @@ namespace MyStudentsApp.Controllers
             if (id < 1) return BadRequest($"Invalid ID {id}");
 
             // 2. Search for the user in the database
-            APIBusinessLayer.clsUser user = clsUser.Find(id);
-
+            clsUser user = clsUser.Find(id);
             // 3. Check if the user exists in our system
             if (user == null) return NotFound("User not found.");
 
@@ -61,7 +66,6 @@ namespace MyStudentsApp.Controllers
         [HttpPost(Name = "AddNewUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDTO> AddUser(CreateUserDTO createUserDto)
         {
@@ -103,18 +107,45 @@ namespace MyStudentsApp.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}", Name = "UpdateUserField")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<UserDTO> UpdateUserField(int id, clsUser.enUpdateType updateType, [FromBody] string newValue)
         {
-            
+            // Capture IP and AdminId once for tracing (helps investigations later)
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
+
+            if (id < 1)
+            {
+                _logger.LogWarning(
+                    "Admin action blocked (invalid id). AdminId={AdminId}, Action=UpdateUser, TargetId={TargetId}, IP={IP}",
+                    adminId, id, ip
+                );
+                return BadRequest($"Invalid ID {id}");
+            }
+
             clsUser user = clsUser.Find(id);
 
-            if (user == null) return NotFound($"User with ID {id} not found.");
+            if (user == null)
+            {
+                // Audit: admin attempted to update a non-existing user
+                _logger.LogWarning(
+                    "Admin action failed (target not found). AdminId={AdminId}, Action=UpdateUser, TargetId={TargetId}, IP={IP}",
+                    adminId, id, ip
+                );
+                return NotFound($"User with ID {id} not found.");
+            }
 
-           
+            // ==========================================
+            // Audit BEFORE updating (Attempt started)
+            // ==========================================
+            _logger.LogInformation(
+                "Admin action started. AdminId={AdminId}, Action=UpdateUser, TargetId={TargetId}, UpdateType={UpdateType}, IP={IP}",
+                adminId, user.UserID, updateType.ToString(), ip
+            );
+
             user.UpdateType = updateType;
 
             switch (updateType)
@@ -142,26 +173,85 @@ namespace MyStudentsApp.Controllers
                     return BadRequest("Invalid Update Type.");
             }
 
-            
-            if (user.Save())
+
+            // Save changes to database
+            if (!user.Save())
             {
-               
-                return Ok(user.UDTO);
+                // Audit: If database fails to save the modifications
+                _logger.LogError(
+                    "Admin action failed during save. AdminId={AdminId}, Action=UpdateUser, TargetId={TargetId}, IP={IP}",
+                    adminId, id, ip
+                );
+                return StatusCode(500, "Database error: Could not update the user.");
             }
 
-            return StatusCode(500, "Update failed.");
+            // Audit: Success
+            _logger.LogInformation(
+                 "Admin action succeeded. AdminId={AdminId}, Action=UpdateUser, TargetId={TargetId}, IP={IP}",
+                 adminId, id, ip
+             );
+
+            return Ok(user.UDTO);
         }
 
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult DeleteUser(int id)
         {
-            if (clsUser.Delete(id)) return Ok($"User {id} deleted.");
-            return NotFound("User not found.");
+            // Capture IP and AdminId once for tracing
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var adminId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown";
+
+            if (id < 1)
+            {
+                _logger.LogWarning(
+                    "Admin action blocked (invalid id). AdminId={AdminId}, Action=DeleteUser, TargetId={TargetId}, IP={IP}",
+                    adminId, id, ip
+                );
+                return BadRequest($"Invalid ID {id}");
+            }
+
+            var user = clsUser.Find(id);
+
+            if (user == null)
+            {
+                // Audit: admin attempted to delete a non-existing user
+                _logger.LogWarning(
+                    "Admin action failed (target not found). AdminId={AdminId}, Action=DeleteUser, TargetId={TargetId}, IP={IP}",
+                    adminId, id, ip
+                );
+                return NotFound("User not found.");
+            }
+
+            // ===============================
+            // Audit BEFORE deleting (recommended)
+            // ===============================
+            _logger.LogInformation(
+                "Admin action started. AdminId={AdminId}, Action=DeleteUser, TargetId={TargetId}, TargetUserName={TargetUserName}, IP={IP}",
+                adminId, user.UserID, user.UserName, ip
+            );
+
+            if (!clsUser.Delete(id))
+            {
+                _logger.LogError(
+                    "Admin action failed during delete. AdminId={AdminId}, Action=DeleteUser, TargetId={TargetId}, IP={IP}",
+                    adminId, id, ip
+                );
+                return StatusCode(500, "Database error: Could not delete the user.");
+            }
+
+            // Audit: Success
+            _logger.LogInformation(
+                 "Admin action succeeded. AdminId={AdminId}, Action=DeleteUser, TargetId={TargetId}, IP={IP}",
+                 adminId, id, ip
+             );
+
+            return Ok($"User {id} deleted.");
         }
     }
 }

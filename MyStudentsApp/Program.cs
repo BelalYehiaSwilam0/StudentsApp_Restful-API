@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Threading.RateLimiting;
+using System.Security.Claims;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -251,6 +252,30 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 // Authorization checks access rules (e.g., [Authorize], roles, policies).
 app.UseAuthorization();
+
+// Catches the final response after the controller runs (via await next).
+// Logs 403 Forbidden errors to track centralized authorization abuse.
+app.Use(async (context, next) =>
+{
+    await next();
+
+
+    if (context.Response.StatusCode == StatusCodes.Status403Forbidden)
+    {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var path = context.Request.Path.ToString();
+
+
+        // ✅ Centralized security log for authorization abuse
+        app.Logger.LogWarning(
+            "Forbidden access. UserId={UserId}, Path={Path}, IP={IP}",
+            userId,
+            path,
+            ip
+        );
+    }
+});
 
 // Map controller routes (e.g., /api/Auth/login, /api/Users/All).
 app.MapControllers();
