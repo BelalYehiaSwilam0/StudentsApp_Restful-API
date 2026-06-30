@@ -2,6 +2,8 @@
 using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 namespace APIDataAccessLayer
 {
     public class PersonDTO
@@ -40,7 +42,7 @@ namespace APIDataAccessLayer
     public class clsPersonData
     {
         
-        public static List<PersonDTO> GetPeople()
+        public static async Task<List<PersonDTO>> GetPeopleAsync()
         {
             var StudentsList = new List<PersonDTO>();
             try
@@ -51,11 +53,14 @@ namespace APIDataAccessLayer
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
 
-                        conn.Open();
+                        // Open connection asynchronously
+                        await conn.OpenAsync();
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        // Execute reader asynchronously
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            while (reader.Read())
+                            // Read rows asynchronously
+                            while (await reader.ReadAsync())
                             {
                                 StudentsList.Add(new PersonDTO
                                 (
@@ -82,7 +87,7 @@ namespace APIDataAccessLayer
             }
         }
 
-        public static PersonDTO GetPersonById(int personId)
+        public static async Task<PersonDTO> GetPersonByIdAsync(int personId)
         {
             try
             {
@@ -93,11 +98,11 @@ namespace APIDataAccessLayer
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@PersonId", personId);
 
-                        connection.Open();
+                        await connection.OpenAsync();
 
-                        using (var reader = command.ExecuteReader())
+                        using (var reader = await command.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 return new PersonDTO
                                     (
@@ -128,7 +133,7 @@ namespace APIDataAccessLayer
             }
         }
 
-        public static int AddPerson(PersonDTO personDTO)
+        public static async Task<int> AddPersonAsync(PersonDTO personDTO)
         {
             try
             {
@@ -148,8 +153,8 @@ namespace APIDataAccessLayer
                         };
                         command.Parameters.Add(outputIdParam);
 
-                        connection.Open();
-                        command.ExecuteNonQuery();
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
 
                         return (int)outputIdParam.Value;
                     }
@@ -162,7 +167,7 @@ namespace APIDataAccessLayer
             }
         }
 
-        public static bool UpdatePerson(PersonDTO updatePerson)
+        public static async Task<bool> UpdatePersonAsync(PersonDTO updatePerson)
         {
             try
             {
@@ -178,8 +183,8 @@ namespace APIDataAccessLayer
                         command.Parameters.AddWithValue("@BirthDate", updatePerson.BirthDate);
                         command.Parameters.AddWithValue("@IsActive", updatePerson.IsActive);
 
-                        connection.Open();
-                        command.ExecuteNonQuery();
+                        await connection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
                         return true;
                     }
                 }
@@ -192,7 +197,7 @@ namespace APIDataAccessLayer
             }
         }
 
-        public static bool DeletePerson(int personId)
+        public static async Task<bool> DeletePersonAsync(int personId)
         {
             try
             {
@@ -203,9 +208,10 @@ namespace APIDataAccessLayer
                         command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@PersonId", personId);
 
-                        connection.Open();
+                        await connection.OpenAsync();
 
-                        int rowsAffected = (int)command.ExecuteScalar();
+                        var result = await command.ExecuteScalarAsync();
+                        int rowsAffected = result != null ? (int)result : 0;
                         return (rowsAffected == 1);
 
 
@@ -221,7 +227,7 @@ namespace APIDataAccessLayer
            
         }
 
-        public static bool IsPersonExist(int PersonID)
+        public static async Task<bool> IsPersonExistAsync(int PersonID)
         {
             bool isFound = false;
             using (SqlConnection connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
@@ -230,8 +236,11 @@ namespace APIDataAccessLayer
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@PersonID", PersonID);
-                    connection.Open();
-                    isFound = (int)command.ExecuteScalar() == 1;
+
+                    await connection.OpenAsync();
+
+                    var result = await command.ExecuteScalarAsync();
+                    isFound = result != null && (int)result == 1;
                 }
             }
             return isFound;

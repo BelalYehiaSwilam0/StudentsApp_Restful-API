@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace MyStudentsApp.Controllers
 {
@@ -26,10 +27,10 @@ namespace MyStudentsApp.Controllers
         [HttpGet("All", Name = "GetAllUsers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<UserDTO>> GetAllUsers()
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAllUsers()
         {
             
-            List<UserDTO> UsersList = clsUser.GetAllUsers();
+            List<UserDTO> UsersList = await clsUser.GetAllUsersAsync();
 
             if (UsersList == null || UsersList.Count == 0)
             {
@@ -49,7 +50,7 @@ namespace MyStudentsApp.Controllers
             if (id < 1) return BadRequest($"Invalid ID {id}");
 
             // 2. Search for the user in the database
-            clsUser user = clsUser.Find(id);
+            clsUser user = await clsUser.FindAsync(id);
             // 3. Check if the user exists in our system
             if (user == null) return NotFound("User not found.");
 
@@ -67,12 +68,12 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<UserDTO> AddUser(CreateUserDTO createUserDto)
+        public async Task<ActionResult<UserDTO>> AddUser(CreateUserDTO createUserDto)
         {
             if (createUserDto == null || createUserDto.PersonID < 1)
                 return BadRequest("Invalid data.");
 
-            clsPerson person = clsPerson.GetPersonById(createUserDto.PersonID);
+            clsPerson person = await clsPerson.GetPersonByIdAsync(createUserDto.PersonID);
 
             if (person == null)
             {
@@ -80,7 +81,7 @@ namespace MyStudentsApp.Controllers
             }
 
            
-            if (clsUser.IsUserExistByPersonID(createUserDto.PersonID))
+            if (await clsUser.IsUserExistByPersonIDAsync(createUserDto.PersonID))
             {
                 return BadRequest("A user account already exists for this person.");
             }
@@ -94,7 +95,7 @@ namespace MyStudentsApp.Controllers
             user.PasswordHash = hashedPassword;
             user.Role = createUserDto.Role;
 
-            if (user.Save())
+            if (await user.SaveAsync())
             {
                user.FullName = person.FirstName + " " + person.LastName;
                 user.Email = person.Email;
@@ -111,7 +112,7 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<UserDTO> UpdateUserField(int id, clsUser.enUpdateType updateType, [FromBody] string newValue)
+        public async Task<ActionResult<UserDTO>> UpdateUserField(int id, clsUser.enUpdateType updateType, [FromBody] string newValue)
         {
             // Capture IP and AdminId once for tracing (helps investigations later)
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -126,7 +127,7 @@ namespace MyStudentsApp.Controllers
                 return BadRequest($"Invalid ID {id}");
             }
 
-            clsUser user = clsUser.Find(id);
+            clsUser user = await clsUser.FindAsync(id);
 
             if (user == null)
             {
@@ -175,7 +176,7 @@ namespace MyStudentsApp.Controllers
 
 
             // Save changes to database
-            if (!user.Save())
+            if (!await user.SaveAsync())
             {
                 // Audit: If database fails to save the modifications
                 _logger.LogError(
@@ -201,7 +202,7 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult DeleteUser(int id)
+        public async Task<ActionResult> DeleteUser(int id)
         {
             // Capture IP and AdminId once for tracing
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -216,7 +217,7 @@ namespace MyStudentsApp.Controllers
                 return BadRequest($"Invalid ID {id}");
             }
 
-            var user = clsUser.Find(id);
+            var user = await clsUser.FindAsync(id);
 
             if (user == null)
             {
@@ -236,7 +237,7 @@ namespace MyStudentsApp.Controllers
                 adminId, user.UserID, user.UserName, ip
             );
 
-            if (!clsUser.Delete(id))
+            if (!await clsUser.DeleteAsync(id))
             {
                 _logger.LogError(
                     "Admin action failed during delete. AdminId={AdminId}, Action=DeleteUser, TargetId={TargetId}, IP={IP}",
