@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace APIDataAccessLayer
 {
@@ -57,7 +58,7 @@ namespace APIDataAccessLayer
     public class clsUserData
     {
         
-        public static List<UserDTO> GetAllUsers()
+        public static async Task<List<UserDTO>> GetAllUsersAsync()
         {
             var usersList = new List<UserDTO>();
             try
@@ -67,10 +68,12 @@ namespace APIDataAccessLayer
                     using (SqlCommand cmd = new SqlCommand("SP_GetAllUsers", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
-                        conn.Open();
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+
+                        await conn.OpenAsync();
+
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 usersList.Add(new UserDTO(
                                     reader.GetInt32(reader.GetOrdinal("UserID")),
@@ -92,7 +95,7 @@ namespace APIDataAccessLayer
         }
 
        
-        public static UserDTO GetUserById(int userID)
+        public static async Task<UserDTO> GetUserByIdAsync(int userID)
         {
             try
             {
@@ -102,10 +105,12 @@ namespace APIDataAccessLayer
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        conn.Open();
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+
+                        await conn.OpenAsync();
+
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 return new UserDTO(
                                     reader.GetInt32(reader.GetOrdinal("UserID")),
@@ -126,7 +131,7 @@ namespace APIDataAccessLayer
             return null;
         }
 
-        public static UserDTO GetUserByUserName(string userName)
+        public static async Task<UserDTO> GetUserByUserNameAsync(string userName)
         {
             try
             {
@@ -136,10 +141,12 @@ namespace APIDataAccessLayer
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@UserName", userName);
-                        conn.Open();
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+
+                        await conn.OpenAsync();
+
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 return new UserDTO(
                                     reader.GetInt32(reader.GetOrdinal("UserID")),
@@ -161,7 +168,7 @@ namespace APIDataAccessLayer
         }
 
 
-        public static int AddNewUser(CreateUserDTO userDTO)
+        public static async Task<int> AddNewUserAsync(CreateUserDTO userDTO)
         {
             try
             {
@@ -178,8 +185,8 @@ namespace APIDataAccessLayer
                         SqlParameter outputParam = new SqlParameter("@NewUserID", SqlDbType.Int) { Direction = ParameterDirection.Output };
                         cmd.Parameters.Add(outputParam);
 
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
+                        await conn.OpenAsync();
+                        await cmd.ExecuteNonQueryAsync();
                         return (int)outputParam.Value;
                     }
                 }
@@ -188,7 +195,7 @@ namespace APIDataAccessLayer
         }
 
         
-        public static bool UpdateUserName(UpdateUserNameDTO dto)
+        public static async Task<bool> UpdateUserNameAsync(UpdateUserNameDTO dto)
         {
             try
             {
@@ -199,8 +206,9 @@ namespace APIDataAccessLayer
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@UserID", dto.UserID);
                         cmd.Parameters.AddWithValue("@NewUserName", dto.NewUserName);
-                        conn.Open();
-                        return cmd.ExecuteNonQuery() > 0;
+
+                        await conn.OpenAsync();
+                        return await cmd.ExecuteNonQueryAsync() > 0;
                     }
                 }
             }
@@ -208,7 +216,7 @@ namespace APIDataAccessLayer
         }
 
         
-        public static bool UpdateUserPassword(UpdateUserPasswordDTO dto)
+        public static async Task<bool> UpdateUserPasswordAsync(UpdateUserPasswordDTO dto)
         {
             try
             {
@@ -219,8 +227,9 @@ namespace APIDataAccessLayer
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@UserID", dto.UserID);
                         cmd.Parameters.AddWithValue("@NewPasswordHash", dto.NewPasswordHash);
-                        conn.Open();
-                        return cmd.ExecuteNonQuery() > 0;
+
+                        await conn.OpenAsync();
+                        return await cmd.ExecuteNonQueryAsync() > 0;
                     }
                 }
             }
@@ -228,7 +237,7 @@ namespace APIDataAccessLayer
         }
 
        
-        public static bool UpdateUserRole(UpdateUserRoleDTO dto)
+        public static async Task<bool> UpdateUserRoleAsync(UpdateUserRoleDTO dto)
         {
             try
             {
@@ -239,8 +248,9 @@ namespace APIDataAccessLayer
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@UserID", dto.UserID);
                         cmd.Parameters.AddWithValue("@NewRole", dto.NewRole);
-                        conn.Open();
-                        return cmd.ExecuteNonQuery() > 0;
+
+                        await conn.OpenAsync();
+                        return await cmd.ExecuteNonQueryAsync() > 0;
                     }
                 }
             }
@@ -248,7 +258,7 @@ namespace APIDataAccessLayer
         }
 
         
-        public static bool DeleteUser(int userID)
+        public static async Task<bool> DeleteUserAsync(int userID)
         {
             try
             {
@@ -258,15 +268,16 @@ namespace APIDataAccessLayer
                     {
                         cmd.CommandType = CommandType.StoredProcedure;
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        conn.Open();
-                        return cmd.ExecuteNonQuery() > 0;
+
+                        await conn.OpenAsync();
+                        return await cmd.ExecuteNonQueryAsync() > 0;
                     }
                 }
             }
             catch { return false; }
         }
 
-        public static bool IsUserExistByPersonID(int PersonID)
+        public static async Task<bool> IsUserExistByPersonIDAsync(int PersonID)
         {
             bool isFound = false;
             using (SqlConnection connection = new SqlConnection(clsDatabaseAccessSettings._connectionString))
@@ -275,8 +286,9 @@ namespace APIDataAccessLayer
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@PersonID", PersonID);
-                    connection.Open();
-                    isFound = (int)command.ExecuteScalar() == 1;
+                    await connection.OpenAsync();
+                    var result = await command.ExecuteScalarAsync();
+                    isFound = result != null && (int)result == 1;
                 }
             }
             return isFound;

@@ -7,16 +7,17 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace APIBusinessLayer.AuthDTOs
 {
     public class AuthToken
     {
-        public static TokenResponse Login(LoginRequest loginRequest)
+        public static async Task<TokenResponse> LoginAsync(LoginRequest loginRequest)
         {
             // Find user by user name
-            clsUser user =
-                clsUser.FindUserByUserName(loginRequest.UserName);
+            clsUser user = await
+                clsUser.FindUserByUserNameAsync(loginRequest.UserName);
 
             // Check if user exists
             if (user == null)
@@ -56,7 +57,7 @@ namespace APIBusinessLayer.AuthDTOs
             user.RefreshTokenInfo.RefreshTokenRevokedAt = null;
 
             // Save new token data
-            bool isSaved = user.RefreshTokenInfo.Save();
+            bool isSaved = await user.RefreshTokenInfo.SaveAsync();
 
             // Check save result
             if (!isSaved)
@@ -103,11 +104,11 @@ namespace APIBusinessLayer.AuthDTOs
             // Convert the token object to a final string.
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        public static TokenResponse RefreshToken(RefreshRequest refreshRequest)
+        public static async Task<TokenResponse> RefreshTokenAsync(RefreshRequest refreshRequest)
         {
 
             // Find user by user name
-            clsUser user =clsUser.FindUserByUserName(refreshRequest.UserName);
+            clsUser user = await clsUser.FindUserByUserNameAsync(refreshRequest.UserName);
 
             // Check if user exists
             if (user == null)
@@ -150,7 +151,7 @@ namespace APIBusinessLayer.AuthDTOs
             user.RefreshTokenInfo.RefreshTokenRevokedAt = null;
 
             // Save new token data
-            bool isSaved = user.RefreshTokenInfo.Save();
+            bool isSaved = await user.RefreshTokenInfo.SaveAsync();
 
             // Check save result
             if (!isSaved)
@@ -163,10 +164,10 @@ namespace APIBusinessLayer.AuthDTOs
                 RefreshToken = newRefreshToken
             };
         }
-        public static bool RevokeToken(LogoutRequest logoutRequest)
+        public static async Task<bool> RevokeTokenAsync(LogoutRequest logoutRequest)
         {
             // Step 1: Retrieve user details from the database using the provided username.
-            clsUser user = clsUser.FindUserByUserName(logoutRequest.UserName);
+            clsUser user = await clsUser.FindUserByUserNameAsync(logoutRequest.UserName);
 
             // Step 2: Security Best Practice - Constant Time/Silent Failure.
             // If the user is not found, we return 'true' to prevent "User Enumeration" attacks,
@@ -185,7 +186,7 @@ namespace APIBusinessLayer.AuthDTOs
             user.RefreshTokenInfo.RefreshTokenRevokedAt = DateTime.UtcNow;
 
             // Save changes in database
-            return user.RefreshTokenInfo.Save();
+            return await user.RefreshTokenInfo.SaveAsync();
         }
     }
 }

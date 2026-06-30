@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 
 namespace StudentApi.Controllers
@@ -23,7 +24,6 @@ namespace StudentApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
-
         public AuthController(ILogger<AuthController> logger)
         {
             _logger = logger;
@@ -37,14 +37,14 @@ namespace StudentApi.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult Login([FromBody] LoginRequest loginRequest)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             // Capture caller IP once (used in all logs for tracing)
             // We store IP as a string and default to "unknown" to avoid null issues.
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             // Send login data to the AuthService and wait for the token.
-            var UserToken = AuthToken.Login(loginRequest);
+            var UserToken = await AuthToken.LoginAsync(loginRequest);
 
             //Security logging: record the failure safely 
             //This helps detect brute-force / credential stuffing attempts.
@@ -67,13 +67,13 @@ namespace StudentApi.Controllers
         //[EnableRateLimiting("AuthLimiter")] //Now refresh is protected.
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshRequest refreshRequest)
         {
             // Capture caller IP once (used in all logs for tracing)
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 
             //  We call the refresh method to get a new token.
-            var result = AuthToken.RefreshToken(refreshRequest);
+            var result = await AuthToken.RefreshTokenAsync(refreshRequest);
 
             if (result == null)
             {
@@ -92,10 +92,10 @@ namespace StudentApi.Controllers
 
         [HttpPost("logout")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult Logout([FromBody] LogoutRequest logoutRequest)
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest logoutRequest)
         {
             //  We stop the token so the user is logged out.
-            var success = AuthToken.RevokeToken(logoutRequest);
+            var success = await AuthToken.RevokeTokenAsync(logoutRequest);
 
             if (!success) return Ok(); // Do not reveal if user exists
 

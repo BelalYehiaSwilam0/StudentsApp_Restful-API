@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace APIDataAccessLayer
 {
@@ -35,7 +36,7 @@ namespace APIDataAccessLayer
     public class clsUserRefreshTokenData
     {
         // This method gets refresh token by user id
-        public static UserRefreshTokenDTO GetRefreshTokenByUserID(int userID)
+        public static async Task<UserRefreshTokenDTO> GetRefreshTokenByUserIDAsync(int userID)
         {
             try
             {
@@ -49,11 +50,11 @@ namespace APIDataAccessLayer
 
                         cmd.Parameters.AddWithValue("@UserID", userID);
 
-                        conn.Open();
+                        await conn.OpenAsync();
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            if (reader.Read())
+                            if (await reader.ReadAsync())
                             {
                                 return new UserRefreshTokenDTO(
                                     reader.GetInt32(reader.GetOrdinal("RefreshTokenID")),
@@ -82,7 +83,7 @@ namespace APIDataAccessLayer
         }
 
         // This method adds refresh token
-        public static int AddRefreshToken(int userID,string refreshTokenHash,DateTime refreshTokenExpiresAt)
+        public static async Task<int> AddRefreshTokenAsync(int userID,string refreshTokenHash,DateTime refreshTokenExpiresAt)
         {
             try
             {
@@ -104,8 +105,8 @@ namespace APIDataAccessLayer
                         SqlParameter outputParam = new SqlParameter("@NewRefreshTokenId", SqlDbType.Int) { Direction = ParameterDirection.Output };
                         cmd.Parameters.Add(outputParam);
 
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
+                        await conn.OpenAsync();
+                        await cmd.ExecuteNonQueryAsync();
                         return (int)outputParam.Value;
                     }
                 }
@@ -117,7 +118,7 @@ namespace APIDataAccessLayer
         }
 
         // This method updates refresh token
-        public static bool UpdateRefreshToken(int userID,string refreshTokenHash,DateTime refreshTokenExpiresAt,DateTime? refreshTokenRevokedAt)
+        public static async Task<bool> UpdateRefreshTokenAsync(int userID,string refreshTokenHash,DateTime refreshTokenExpiresAt,DateTime? refreshTokenRevokedAt)
         {
             try
             {
@@ -137,9 +138,9 @@ namespace APIDataAccessLayer
 
                         cmd.Parameters.AddWithValue("@RefreshTokenRevokedAt", (object)refreshTokenRevokedAt ?? DBNull.Value);
 
-                        conn.Open();
+                        await conn.OpenAsync();
 
-                        return cmd.ExecuteNonQuery() > 0;
+                        return await cmd.ExecuteNonQueryAsync() > 0;
                     }
                 }
             }

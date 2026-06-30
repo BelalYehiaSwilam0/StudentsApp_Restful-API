@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using APIDataAccessLayer;
 
 namespace APIBusinessLayer
@@ -47,31 +48,44 @@ namespace APIBusinessLayer
             this.PasswordHash = uDto.PasswordHash;
             this.Role = uDto.Role;
             this.IsActive = uDto.IsActive;
-
-            // Load refresh token data
-            this.RefreshTokenInfo =
-                clsUserRefreshToken.FindByUserID(this.UserID);
+            // Note: We cannot use 'await' inside constructors in C#.
+            // To make the code async and fast, we moved 'RefreshTokenInfo' out of here.
+            // It is now loaded using async methods like FindAsync() and FindUserByUserNameAsync().
             this.Mode = enMode.Update;
         }
 
-        public static List<UserDTO> GetAllUsers() => clsUserData.GetAllUsers();
+        public static async Task<List<UserDTO>> GetAllUsersAsync() => await clsUserData.GetAllUsersAsync();
 
-        public static clsUser Find(int userID)
+        public static async Task<clsUser> FindAsync(int userID)
         {
-            UserDTO uDto = clsUserData.GetUserById(userID);
-            return (uDto != null) ? new clsUser(uDto) : null;
+            UserDTO uDto = await clsUserData.GetUserByIdAsync(userID);
+            if (uDto != null)
+            {
+                clsUser user = new clsUser(uDto);
+
+                user.RefreshTokenInfo = await clsUserRefreshToken.FindByUserIDAsync(userID);
+
+                return user;
+            }
+            return null;
         }
 
-        public static clsUser FindUserByUserName(string userName)
+        public static async Task<clsUser> FindUserByUserNameAsync(string userName)
         {
             // Call DAL to get the user data
-             UserDTO uDto = clsUserData.GetUserByUserName(userName);
-            return (uDto != null) ? new clsUser(uDto) : null;
+             UserDTO uDto = await clsUserData.GetUserByUserNameAsync(userName);
+            if (uDto != null)
+            {
+                clsUser user = new clsUser(uDto);
+                user.RefreshTokenInfo = await clsUserRefreshToken.FindByUserIDAsync(user.UserID);
+                return user;
+            }
+            return null;
         }
 
-        private bool _AddNewUser()
+        private async Task<bool> _AddNewUserAsync()
         {
-            this.UserID = clsUserData.AddNewUser(new CreateUserDTO
+            this.UserID = await clsUserData.AddNewUserAsync(new CreateUserDTO
             {
                 PersonID = this.PersonID,
                 UserName = this.UserName,
@@ -82,12 +96,12 @@ namespace APIBusinessLayer
             return (this.UserID != -1);
         }
 
-        private bool _UpdateUser()
+        private async Task<bool> _UpdateUserAsync()
         {
             switch (UpdateType)
             {
                 case enUpdateType.UserName:
-                    return clsUserData.UpdateUserName(new UpdateUserNameDTO
+                    return await clsUserData.UpdateUserNameAsync(new UpdateUserNameDTO
                     {
                         UserID = this.UserID,
                         NewUserName = this.UserName
@@ -95,14 +109,14 @@ namespace APIBusinessLayer
 
                 case enUpdateType.Password:
                    
-                    return clsUserData.UpdateUserPassword(new UpdateUserPasswordDTO
+                    return await clsUserData.UpdateUserPasswordAsync(new UpdateUserPasswordDTO
                     {
                         UserID = this.UserID,
                         NewPasswordHash = this.PasswordHash
                     });
 
                 case enUpdateType.Role:
-                    return clsUserData.UpdateUserRole(new UpdateUserRoleDTO
+                    return await clsUserData.UpdateUserRoleAsync(new UpdateUserRoleDTO
                     {
                         UserID = this.UserID,
                         NewRole = this.Role
@@ -113,28 +127,28 @@ namespace APIBusinessLayer
             }
         }
 
-        public bool Save()
+        public async Task<bool> SaveAsync()
         {
             switch (Mode)
             {
                 case enMode.AddNew:
-                    if (_AddNewUser()) 
+                    if (await _AddNewUserAsync()) 
                     { 
                         Mode = enMode.Update;
                         return true;
                     }
                     return false;
                 case enMode.Update:
-                    return _UpdateUser();
+                    return await _UpdateUserAsync();
             }
             return false;
         }
 
-        public static bool Delete(int userID) => clsUserData.DeleteUser(userID);
+        public static async Task<bool> DeleteAsync(int userID) => await clsUserData.DeleteUserAsync(userID);
 
-        public static bool IsUserExistByPersonID(int PersonID)
+        public static async Task<bool> IsUserExistByPersonIDAsync(int PersonID)
         {
-            return clsUserData.IsUserExistByPersonID(PersonID);
+            return await clsUserData.IsUserExistByPersonIDAsync(PersonID);
         }
     }
 }

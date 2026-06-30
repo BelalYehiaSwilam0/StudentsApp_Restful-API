@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
+using System.Threading.Tasks;
 namespace MyStudentsApp.Controllers
 {
     [Authorize]
@@ -24,9 +25,9 @@ namespace MyStudentsApp.Controllers
         [HttpGet ("All", Name = "GetPeople")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<IEnumerable<PersonDTO>> GetPeople()
+        public async Task<ActionResult<IEnumerable<PersonDTO>>> GetPeople()
         {
-            List<PersonDTO> PeopleList = APIBusinessLayer.clsPerson.GetPeople();
+            List<PersonDTO> PeopleList = await clsPerson.GetPeopleAsync();
 
             if(PeopleList.Count == 0)
             {
@@ -41,14 +42,14 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<PersonDTO> GetPersonById(int id)
+        public async Task<ActionResult<PersonDTO>> GetPersonById(int id)
         {
             if (id < 1)
             {
                 return BadRequest($"Not accepted ID {id}");
             }
 
-            APIBusinessLayer.clsPerson person = APIBusinessLayer.clsPerson.GetPersonById(id);
+            APIBusinessLayer.clsPerson person = await clsPerson.GetPersonByIdAsync(id);
 
             if(person == null)
             {
@@ -65,7 +66,7 @@ namespace MyStudentsApp.Controllers
         [HttpPost(Name = "AddPerson")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<PersonDTO>AddPerson([FromBody] PersonDTO newPersonDTO)
+        public async Task<ActionResult<PersonDTO>> AddPerson([FromBody] PersonDTO newPersonDTO)
         {
             if (newPersonDTO == null || string.IsNullOrEmpty(newPersonDTO.FirstName) || string.IsNullOrEmpty(newPersonDTO.LastName) || newPersonDTO.BirthDate > DateTime.Now)
             {
@@ -80,7 +81,7 @@ namespace MyStudentsApp.Controllers
             person.Age = newPersonDTO.Age;
             person.IsActive = newPersonDTO.IsActive;
 
-            if (person.Save())
+            if (await person.SaveAsync())
             {
                 newPersonDTO.PersonId = person.PersonId;
                 return CreatedAtRoute("GetPersonById", new { id = newPersonDTO.PersonId }, newPersonDTO);
@@ -96,7 +97,7 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult DeletePersonById(int id)
+        public async Task<ActionResult> DeletePersonById(int id)
         {
             // Capture IP once for tracing (helps investigations later)
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -107,7 +108,7 @@ namespace MyStudentsApp.Controllers
 
             if (id < 1)
             {
-                // ✅ Audit attempt (invalid input) - still useful signal
+                //  Audit attempt (invalid input) - still useful signal
                 _logger.LogWarning(
                     "Admin action blocked (invalid id). AdminId={AdminId}, Action=DeletePerson, TargetId={TargetId}, IP={IP}",
                     adminId,
@@ -117,7 +118,7 @@ namespace MyStudentsApp.Controllers
                 return BadRequest($"Not accepted ID {id}");
             }
 
-            var person = clsPerson.GetPersonById(id);
+            var person = await clsPerson.GetPersonByIdAsync(id);
 
             if (person == null)
             {
@@ -135,7 +136,7 @@ namespace MyStudentsApp.Controllers
             // ===============================
             // Audit BEFORE deleting (recommended)
             // ===============================
-            // ✅ Why before?
+            //  Why before?
             // If delete throws or fails later, you still have the audit record of the attempt.
             _logger.LogInformation(
                 "Admin action started. AdminId={AdminId}, Action=DeleteStudent, TargetId={TargetId}, TargetEmail={TargetEmail}, IP={IP}",
@@ -145,7 +146,7 @@ namespace MyStudentsApp.Controllers
                 ip
             );
 
-            if (!APIBusinessLayer.clsPerson.DeletePerson(id))
+            if (!await clsPerson.DeletePersonAsync(id))
             {
                 _logger.LogInformation(
                     "Admin action not succeeded. AdminId={AdminId}, Action=DeletePerson, TargetId={TargetId}, IP={IP}",
@@ -172,7 +173,7 @@ namespace MyStudentsApp.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<PersonDTO> UpdatePersonById(int id, UpdatePersonDTO updatedPerson)
+        public async Task<ActionResult<PersonDTO>> UpdatePersonById(int id, UpdatePersonDTO updatedPerson)
         {
             // Capture IP once for tracing (helps investigations later)
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -194,7 +195,7 @@ namespace MyStudentsApp.Controllers
             }
                
 
-            clsPerson person = clsPerson.GetPersonById(id);
+            clsPerson person = await clsPerson.GetPersonByIdAsync(id);
             if (person == null)
             {
                 // ✅ Audit: admin attempted to update a non-existing person
@@ -231,7 +232,7 @@ namespace MyStudentsApp.Controllers
                 person.IsActive = updatedPerson.IsActive.Value;
 
             // Save changes to database
-            if (!person.Save())
+            if (!await person.SaveAsync())
             {
                 // ✅ Audit: If database fails to save the modifications
                 _logger.LogError(
@@ -243,7 +244,7 @@ namespace MyStudentsApp.Controllers
                 return StatusCode(500, "Database error: Could not update the person.");
             }
 
-            // ✅ Audit: Success
+            //  Audit: Success
             _logger.LogInformation(
                  "Admin action succeeded. AdminId={AdminId}, Action=UpdatePerson, TargetId={TargetId}, IP={IP}",
                  adminId,

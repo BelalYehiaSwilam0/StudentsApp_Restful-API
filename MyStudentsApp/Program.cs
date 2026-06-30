@@ -233,6 +233,38 @@ app.UseHttpsRedirection();
 
 app.UseCors("StudentApiCorsPolicy");
 
+// Optimized Centralized Middleware to handle BOTH 429 Custom Messages/Logging and 403 Logging safely
+app.Use(async (context, next) =>
+{
+    await next();
+
+    // 1. Handle 429 Too Many Requests: Write Custom Message AND trigger Server Log
+    if (context.Response.StatusCode == StatusCodes.Status429TooManyRequests)
+    {
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var path = context.Request.Path.ToString();
+        app.Logger.LogWarning("Rate Limit Exceeded (429)! IP={IP}, Path={Path}", ip, path);
+
+        if (!context.Response.HasStarted)
+        {
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync("Please slow down and try again later.");
+        }
+    }
+
+    // 2. Centralized security log for 403 Forbidden authorization abuse
+    if (context.Response.StatusCode == StatusCodes.Status403Forbidden)
+    {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var path = context.Request.Path.ToString();
+
+        app.Logger.LogWarning(
+            "Forbidden access. UserId={UserId}, Path={Path}, IP={IP}",
+            userId, path, ip
+        );
+    }
+});
 //This ensures abusive requests are blocked early, before expensive work.
 app.UseRateLimiter();
 
@@ -253,29 +285,7 @@ app.UseAuthentication();
 // Authorization checks access rules (e.g., [Authorize], roles, policies).
 app.UseAuthorization();
 
-// Catches the final response after the controller runs (via await next).
-// Logs 403 Forbidden errors to track centralized authorization abuse.
-app.Use(async (context, next) =>
-{
-    await next();
 
-
-    if (context.Response.StatusCode == StatusCodes.Status403Forbidden)
-    {
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
-        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        var path = context.Request.Path.ToString();
-
-
-        // ✅ Centralized security log for authorization abuse
-        app.Logger.LogWarning(
-            "Forbidden access. UserId={UserId}, Path={Path}, IP={IP}",
-            userId,
-            path,
-            ip
-        );
-    }
-});
 
 // Map controller routes (e.g., /api/Auth/login, /api/Users/All).
 app.MapControllers();

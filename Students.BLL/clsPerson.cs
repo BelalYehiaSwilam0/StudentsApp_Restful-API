@@ -1,6 +1,7 @@
-﻿    using System.Data;
+﻿using System.Data;
 using System.Runtime.CompilerServices;
 using APIDataAccessLayer;
+using System.Threading.Tasks;
 
 
 namespace APIBusinessLayer
@@ -52,14 +53,14 @@ namespace APIBusinessLayer
             this.Mode = enMode.Update;
         }
 
-        public static List<PersonDTO> GetPeople()
+        public static async Task<List<PersonDTO>> GetPeopleAsync()
         {
-            return APIDataAccessLayer.clsPersonData.GetPeople();
+            return await clsPersonData.GetPeopleAsync();
         }
 
-        public static clsPerson GetPersonById(int PersonID)
+        public static async Task<clsPerson> GetPersonByIdAsync(int PersonID)
         {
-            PersonDTO SDTO = APIDataAccessLayer.clsPersonData.GetPersonById(PersonID);
+            PersonDTO SDTO = await clsPersonData.GetPersonByIdAsync(PersonID);
 
             if (SDTO != null)
             {
@@ -69,26 +70,26 @@ namespace APIBusinessLayer
                 return null;
         }
 
-        private bool _AddPerson()
+        private async Task<bool> _AddPersonAsync()
         {
-            this.PersonId = APIDataAccessLayer.clsPersonData.AddPerson(PDTO);
+            this.PersonId = await clsPersonData.AddPersonAsync(PDTO);
             return (this.PersonId != -1);
         }
-        private bool _UpdatePerson()
+        private async Task<bool> _UpdatePersonAsync()
         {
-            return APIDataAccessLayer.clsPersonData.UpdatePerson(PDTO);
+            return await clsPersonData.UpdatePersonAsync(PDTO);
         }
 
-        public static bool DeletePerson(int PersonID)
+        public static async Task<bool> DeletePersonAsync(int PersonID)
         {
-            return APIDataAccessLayer.clsPersonData.DeletePerson(PersonID);
+            return await clsPersonData.DeletePersonAsync(PersonID);
         }
-        public bool Save()
+        public async Task<bool> SaveAsync()
         {
             switch (Mode)
             {
                 case enMode.AddNew:
-                    if(_AddPerson())
+                    if(await _AddPersonAsync())
                     {
                         Mode = enMode.Update;
                         return true;
@@ -99,15 +100,15 @@ namespace APIBusinessLayer
                     }
                     
                 case enMode.Update:
-                    return _UpdatePerson();
-               
+                    return await _UpdatePersonAsync();
+
             }
             return false;
         }
 
-        public static bool IsPersonExist(int PersonID)
+        public static async Task<bool> IsPersonExistAsync(int PersonID)
         {
-            return clsPersonData.IsPersonExist(PersonID);
+            return await clsPersonData.IsPersonExistAsync(PersonID);
         }
     }
 }

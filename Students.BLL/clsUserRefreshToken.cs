@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using APIDataAccessLayer;
 
 namespace APIBusinessLayer
@@ -44,9 +45,9 @@ namespace APIBusinessLayer
         }
 
         // This method finds token by user id
-        public static clsUserRefreshToken FindByUserID(int userID)
+        public static async Task<clsUserRefreshToken> FindByUserIDAsync(int userID)
         {
-            UserRefreshTokenDTO dto = clsUserRefreshTokenData.GetRefreshTokenByUserID(userID);
+            UserRefreshTokenDTO dto = await clsUserRefreshTokenData.GetRefreshTokenByUserIDAsync(userID);
 
             if (dto != null)
             {
@@ -56,9 +57,9 @@ namespace APIBusinessLayer
             return null;
         }
 
-        private bool _AddRefreshToken()
+        private async Task<bool> _AddRefreshTokenAsync()
         {
-            this.RefreshTokenID = clsUserRefreshTokenData.AddRefreshToken(
+            this.RefreshTokenID = await clsUserRefreshTokenData.AddRefreshTokenAsync(
                    this.UserID,
                    this.RefreshTokenHash,
                    this.RefreshTokenExpiresAt
@@ -66,18 +67,19 @@ namespace APIBusinessLayer
             return (this.UserID != -1);
         }
 
-        private bool _UpdateRefreshTokenInfo()
+        private async Task<bool> _UpdateRefreshTokenInfoAsync()
         {
-            return clsUserRefreshTokenData.UpdateRefreshToken(this.UserID,this.RefreshTokenHash,this.RefreshTokenExpiresAt,this.RefreshTokenRevokedAt);
+            return await clsUserRefreshTokenData.UpdateRefreshTokenAsync(this.UserID,this.RefreshTokenHash,
+                this.RefreshTokenExpiresAt,this.RefreshTokenRevokedAt);
         }
 
         // This method saves refresh token
-        public bool Save()
+        public async Task<bool> SaveAsync()
         {
             switch (Mode)
             {
                 case enMode.AddNew:
-                    if (_AddRefreshToken())
+                    if (await _AddRefreshTokenAsync())
                     {
                         Mode = enMode.Update;
                         return true;
@@ -88,7 +90,7 @@ namespace APIBusinessLayer
                     }
 
                 case enMode.Update:
-                    return _UpdateRefreshTokenInfo();
+                    return await _UpdateRefreshTokenInfoAsync();
 
             }
             return false;
