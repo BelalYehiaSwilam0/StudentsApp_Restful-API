@@ -15,7 +15,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet ("All", Name = "GetPeople")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<PersonDTO>> GetPeople()
         {
@@ -32,7 +31,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]// Only Admins can access this
         [HttpGet("{id}", Name = "GetPersonById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<PersonDTO> GetPersonById(int id)
@@ -58,7 +56,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost(Name = "AddPerson")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public ActionResult<PersonDTO>AddPerson([FromBody] PersonDTO newPersonDTO)
         {
@@ -89,7 +86,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}" , Name = "DeletePersonById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DeletePersonById(int id)
@@ -112,7 +108,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}", Name = "UpdatePersonById")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<PersonDTO> UpdatePersonById(int id, UpdatePersonDTO updatedPerson)

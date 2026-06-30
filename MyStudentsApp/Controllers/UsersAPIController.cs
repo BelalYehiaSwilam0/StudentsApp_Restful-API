@@ -18,7 +18,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet("All", Name = "GetAllUsers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<IEnumerable<UserDTO>> GetAllUsers()
         {
@@ -61,7 +60,6 @@ namespace MyStudentsApp.Controllers
         [HttpPost(Name = "AddNewUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDTO> AddUser(CreateUserDTO createUserDto)
         {
@@ -105,7 +103,6 @@ namespace MyStudentsApp.Controllers
         [HttpPut("{id}", Name = "UpdateUserField")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult<UserDTO> UpdateUserField(int id, clsUser.enUpdateType updateType, [FromBody] string newValue)
         {
@@ -156,7 +153,6 @@ namespace MyStudentsApp.Controllers
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult DeleteUser(int id)
         {
